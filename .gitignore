@@ -1,0 +1,10 @@
+.env
+.venv
+ml-env/
+__pycache__/
+*.pyc
+.DS_Store
+.jupyter/
+data/raw/
+models/*.pkl
+*.log
