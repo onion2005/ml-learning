@@ -231,62 +231,59 @@ print(f"Run ID: {best_run_id}")
 ### Step 4: Model Registry Setup (15 minutes)
 
 ```python
-# Cell 4: Set up model registry and versioning
-
+# Cell 4: Updated model registry for MLflow 3.x
 from mlflow.tracking import MlflowClient
 
 client = MlflowClient()
 
 # List all registered models
-models = client.list_registered_models()
+models = client.search_registered_models()
 print(f"Registered models: {len(models)}")
-
 for model in models:
     print(f"Model: {model.name}")
-    for version in model.latest_versions:
+    versions = client.search_model_versions(f"name='{model.name}'")
+    for version in versions:
         print(f"  Version {version.version}: {version.current_stage}")
-
-# Promote best model to staging
+# Instead of stages, use aliases (MLflow 3.x approach)
 model_name = "iris-classifier-best"
 try:
     # Get the latest version
-    latest_versions = client.get_latest_versions(model_name, stages=["None"])
-    if latest_versions:
-        latest_version = latest_versions[0]
-        
-        # Transition to staging
-        client.transition_model_version_stage(
+    versions = client.search_model_versions(f"name='{model_name}'")
+    if versions:
+        latest_version = versions[0]  # Most recent version
+        # Set alias instead of stage
+        client.set_registered_model_alias(
             name=model_name,
-            version=latest_version.version,
-            stage="Staging"
-        )
-        
-        print(f"Promoted model {model_name} version {latest_version.version} to Staging")
-        
+            alias="champion",
+            version=latest_version.version
+       )
+
+        print(f"Set alias 'champion' for model {model_name} version {latest_version.version}")
+
         # Add description
         client.update_model_version(
-            name=model_name,
-            version=latest_version.version,
-            description=f"Best performing model with accuracy {best_accuracy:.3f}"
-        )
-    
-except Exception as e:
-    print(f"Model registry operation failed: {e}")
+           name=model_name,
+           version=latest_version.version,
+           description=f"Best performing model with accuracy {best_accuracy:.3f}"
+       )
 
-# Function to load model from registry
-def load_model_from_registry(model_name, stage="Staging"):
-    """Load model from MLflow model registry"""
-    model_uri = f"models:/{model_name}/{stage}"
-    model = mlflow.sklearn.load_model(model_uri)
-    return model
+except Exception as e:
+   print(f"Model registry operation failed: {e}")
+
+# Updated function to load model using aliases
+def load_model_from_registry(model_name, alias="champion"):
+   """Load model from MLflow model registry using alias"""
+   model_uri = f"models:/{model_name}@{alias}"
+   model = mlflow.sklearn.load_model(model_uri)
+   return model
 
 # Test loading from registry
 try:
-    staging_model = load_model_from_registry("iris-classifier-best", "Staging")
-    test_prediction = staging_model.predict([[5.1, 3.5, 1.4, 0.2]])
-    print(f"Test prediction from registry model: {iris.target_names[test_prediction[0]]}")
+   champion_model = load_model_from_registry("iris-classifier-best", "champion")
+   test_prediction = champion_model.predict([[5.1, 3.5, 1.4, 0.2]])
+   print(f"Test prediction from registry model: {iris.target_names[test_prediction[0]]}")
 except Exception as e:
-    print(f"Could not load from registry: {e}")
+   print(f"Could not load from registry: {e}")
 ```
 
 ### Step 5: Model Comparison and Analysis (15 minutes)
