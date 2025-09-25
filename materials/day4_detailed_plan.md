@@ -24,7 +24,7 @@ import os
 from datetime import datetime
 
 # Initialize Bedrock client
-bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
+bedrock = boto3.client(service_name="bedrock")
 
 def test_bedrock_access():
     """Test access to Claude via Bedrock"""
@@ -54,7 +54,7 @@ test_bedrock_access()
 
 from langchain.document_loaders import PyPDFLoader, TextLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import BedrockEmbeddings
+from langchain_aws import BedrockEmbeddings
 import chromadb
 from chromadb.config import Settings
 
@@ -184,7 +184,7 @@ class EnterpriseRAGEngine:
         # Create prompt
         prompt = f"""Based on the following context, please answer the question. If the answer is not in the context, say so clearly.
 
-Context:
+Context: 
 {context_text}
 
 Question: {query}

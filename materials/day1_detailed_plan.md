@@ -166,7 +166,7 @@ python -m ipykernel install --user --name ml-env --display-name "ML Learning Env
 # Create .env file for configuration
 cat > .env << EOF
 AWS_PROFILE=ml-learning
-ML_BUCKET_NAME=$ML_BUCKET_NAME
+ML_BUCKET_NAME=ml-learning-20250922-cloudshell-user
 AWS_DEFAULT_REGION=ap-southeast-2
 OPENAI_API_KEY=your_key_here_if_you_have_one
 EOF
